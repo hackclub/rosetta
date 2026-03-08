@@ -5,6 +5,8 @@ The whole intention of this bot is to be added into the channels of a program th
 
 The way it works, it checks on designated channels if a message is using a language other than English, and if it is, it will prompt the person to authorize Rosetta to translate their message to English on their behalf.
 
+https://github.com/user-attachments/assets/cc7ab9a8-9435-4af4-ab92-8c2b6725ed9f
+
 ## Development
 In order to get started with development, you will need to have a Slack app set up and a database set up. 
 
@@ -34,3 +36,7 @@ Rosetta was built to be deployed on Coolify, but it should be deployable on any 
 You need to setup a Postgresql database and configure the environment variables in Coolify, same goes with the Slack app and OpenRouter API key.
 
 To deploy Rosetta in Coolify, you can use the following instructions:
+
+https://github.com/user-attachments/assets/a7e6b0e4-eecf-458f-a807-43e9419da17a
+
+After this, you can add your environment variables and deploy Rosetta onto production!
