@@ -1,8 +1,8 @@
 import { OpenRouter } from "@openrouter/sdk";
 
 const client = new OpenRouter({
-    apiKey: process.env.HACKAI_KEY,
-    serverURL: "https://ai.hackclub.com/proxy/v1",
+    apiKey: process.env.OPENROUTER_API_KEY,
+    serverURL: process.env.OPENROUTER_API_URL,
 });
 
 export async function needsTranslation(text: string): Promise<boolean> {
