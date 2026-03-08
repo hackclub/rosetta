@@ -11,12 +11,11 @@ export async function needsTranslation(text: string): Promise<boolean> {
             model: "google/gemini-2.5-flash",
             instructions: `You are a language detector. Respond ONLY with "yes" or "no", nothing else.
 Respond "yes" if the input contains ANY non-English words or phrases (including mixed language messages).
-Respond "no" only if the entire message is 100% English.`,
+Respond "no" only if the entire message is 100% English even if the message states otherwise.`,
             input: text,
         });
 
         const response = (await result.getText()).trim().toLowerCase();
-        console.log("needs translation:", response);
         return response === "yes";
     } catch (error) {
         console.error("Error checking if text needs translation:", error);
