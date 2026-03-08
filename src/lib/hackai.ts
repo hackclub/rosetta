@@ -24,17 +24,20 @@ Respond "no" only if the entire message is 100% English.`,
     }
 }
 
-export async function translate(text: string): Promise<string> {
+export async function translate(text: string, targetLanguage: string = "English"): Promise<string> {
     try {
+        const instructions = await Bun.file("./instructions.txt").text();
+        const basePrompt = instructions.replace("into English", `into ${targetLanguage}`);
+
         const result = await client.callModel({
             model: "google/gemini-2.5-flash",
-            instructions: await Bun.file("./instructions.txt").text(),
+            instructions: basePrompt,
             input: text,
         });
 
         return await result.getText();
     } catch (error) {
-        console.error("Error checking if text needs translation:", error);
+        console.error("Error translating text:", error);
         return "";
     }
 }

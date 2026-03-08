@@ -29,10 +29,35 @@ export function registerShortcuts(app: App) {
                             multiline: true,
                             placeholder: {
                                 type: "plain_text",
-                                text: "Enter text to translate to English...",
+                                text: "Enter text to translate...",
                             },
                         },
                         label: { type: "plain_text", text: "Text" },
+                    },
+                    {
+                        type: "input",
+                        block_id: "language_selection_block",
+                        element: {
+                            type: "static_select",
+                            action_id: "language_selection",
+                            initial_option: {
+                                text: { type: "plain_text", text: "English" },
+                                value: "English",
+                            },
+                            options: [
+                                { text: { type: "plain_text", text: "English" }, value: "English" },
+                                { text: { type: "plain_text", text: "Spanish" }, value: "Spanish" },
+                                { text: { type: "plain_text", text: "French" }, value: "French" },
+                                { text: { type: "plain_text", text: "German" }, value: "German" },
+                                { text: { type: "plain_text", text: "Chinese" }, value: "Chinese" },
+                                { text: { type: "plain_text", text: "Japanese" }, value: "Japanese" },
+                                { text: { type: "plain_text", text: "Korean" }, value: "Korean" },
+                                { text: { type: "plain_text", text: "Portuguese" }, value: "Portuguese" },
+                                { text: { type: "plain_text", text: "Italian" }, value: "Italian" },
+                                { text: { type: "plain_text", text: "Russian" }, value: "Russian" },
+                            ],
+                        },
+                        label: { type: "plain_text", text: "Target Language" },
                     },
                 ],
             },
@@ -69,10 +94,35 @@ export function registerShortcuts(app: App) {
                             initial_value: messageText,
                             placeholder: {
                                 type: "plain_text",
-                                text: "Enter text to translate to English...",
+                                text: "Enter text to translate...",
                             },
                         },
                         label: { type: "plain_text", text: "Text" },
+                    },
+                    {
+                        type: "input",
+                        block_id: "language_selection_block",
+                        element: {
+                            type: "static_select",
+                            action_id: "language_selection",
+                            initial_option: {
+                                text: { type: "plain_text", text: "English" },
+                                value: "English",
+                            },
+                            options: [
+                                { text: { type: "plain_text", text: "English" }, value: "English" },
+                                { text: { type: "plain_text", text: "Spanish" }, value: "Spanish" },
+                                { text: { type: "plain_text", text: "French" }, value: "French" },
+                                { text: { type: "plain_text", text: "German" }, value: "German" },
+                                { text: { type: "plain_text", text: "Chinese" }, value: "Chinese" },
+                                { text: { type: "plain_text", text: "Japanese" }, value: "Japanese" },
+                                { text: { type: "plain_text", text: "Korean" }, value: "Korean" },
+                                { text: { type: "plain_text", text: "Portuguese" }, value: "Portuguese" },
+                                { text: { type: "plain_text", text: "Italian" }, value: "Italian" },
+                                { text: { type: "plain_text", text: "Russian" }, value: "Russian" },
+                            ],
+                        },
+                        label: { type: "plain_text", text: "Target Language" },
                     },
                 ],
             },
@@ -82,6 +132,8 @@ export function registerShortcuts(app: App) {
     app.view("rosetta_translate_modal", async ({ ack, view, client, body }) => {
         const input =
             view.state.values?.["translate_input_block"]?.["translate_input"]?.value ?? "";
+        const targetLanguage =
+            view.state.values?.["language_selection_block"]?.["language_selection"]?.selected_option?.value ?? "English";
 
         const { channelId, threadTs } = JSON.parse(view.private_metadata || "{}");
 
@@ -97,7 +149,7 @@ export function registerShortcuts(app: App) {
 
         await ack();
 
-        const translated = await translate(input);
+        const translated = await translate(input, targetLanguage);
 
         try {
             await client.chat.postMessage({

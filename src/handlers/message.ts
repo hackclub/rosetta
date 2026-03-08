@@ -13,7 +13,7 @@ export function registerMessageHandler(app: App) {
         if (!("text" in event) || !event.text) return;
         if ("bot_id" in event && event.bot_id) return;
 
-        const { text, user: userId, channel, ts } = event as any;
+        const { text, user: userId, channel, ts, thread_ts } = event as any;
         if (!userId || !text.trim()) return;
 
         (async () => {
@@ -48,6 +48,7 @@ export function registerMessageHandler(app: App) {
                         channel,
                         user: userId,
                         text: lang.greeting,
+                        thread_ts,
                         blocks: [
                             {
                                 type: "section",
@@ -102,6 +103,7 @@ export function registerMessageHandler(app: App) {
                             channel,
                             user: userId,
                             text: lang.greeting,
+                            thread_ts,
                             blocks: [
                                 {
                                     type: "section",
