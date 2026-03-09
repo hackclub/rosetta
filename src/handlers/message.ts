@@ -26,10 +26,8 @@ export function registerMessageHandler(app: App) {
                     if (Date.now() - recentlySent < 5 * 60 * 1000) return;
                 }
 
-                if (tokenRow) {
-                    const shouldTranslate = await needsTranslation(text);
-                    if (!shouldTranslate) return;
-                }
+                const shouldTranslate = await needsTranslation(text);
+                if (!shouldTranslate) return;
 
                 const settings = await getUserSettings(userId);
                 const promptStatus = settings?.promptStatus ?? null;
@@ -91,6 +89,9 @@ export function registerMessageHandler(app: App) {
                     if (now - lastSent >= 5 * 60 * 1000) { // 5 minutes
                         lastReminderSent.set(userId, now);
                         const lang = await detectLanguage(text);
+
+                        if (lang.languageCode === "en") return; // you would be surprised.
+
                         const translatedLabels = await translateUI(
                             ["🔐 Authorize Rosetta", "🙅 Don't ask me again"],
                             lang.languageCode,
