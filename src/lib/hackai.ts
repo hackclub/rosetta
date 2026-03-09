@@ -1,3 +1,5 @@
+import { detect } from 'tinyld';
+import { iso6393 } from 'iso-639-3';
 import { OpenRouter } from "@openrouter/sdk";
 
 const client = new OpenRouter({
@@ -5,22 +7,15 @@ const client = new OpenRouter({
     serverURL: process.env.OPENROUTER_API_URL,
 });
 
-export async function needsTranslation(text: string): Promise<boolean> {
-    try {
-        const result = await client.callModel({
-            model: "google/gemini-2.5-flash",
-            instructions: `You are a language detector. Respond ONLY with "yes" or "no", nothing else.
-Respond "yes" if the input contains ANY non-English words or phrases (including mixed language messages).
-Respond "no" only if the entire message is 100% English even if the message states otherwise.`,
-            input: text,
-        });
+const iso1Map = new Map(
+    iso6393
+        .filter(lang => lang.iso6391)
+        .map(lang => [lang.iso6391!, { name: lang.name }])
+);
 
-        const response = (await result.getText()).trim().toLowerCase();
-        return response === "yes";
-    } catch (error) {
-        console.error("Error checking if text needs translation:", error);
-        return false;
-    }
+export function needsTranslation(text: string): boolean {
+    const lang = detect(text);
+    return lang !== 'en' && lang !== '';
 }
 
 export async function translate(text: string, targetLanguage: string = "English"): Promise<string> {
@@ -46,31 +41,42 @@ export async function detectLanguage(text: string): Promise<{
     languageCode: string;
     greeting: string;
 }> {
+    const iso1 = detect(text);
+
+    if (!iso1) {
+        return {
+            languageName: 'another language',
+            languageCode: '??',
+            greeting: "It looks like you're writing in another language. Authorize Rosetta to translate your messages to English automatically!",
+        };
+    }
+
+    const langInfo = iso1Map.get(iso1);
+    const languageName = langInfo?.name ?? 'another language';
+    const languageCode = iso1;
+
     try {
         const result = await client.callModel({
             model: "google/gemini-2.5-flash",
-            instructions: `You are a language detection assistant. 
-Given a message, respond ONLY with a valid JSON object (no markdown, no backticks) with these fields:
-- "languageName": the name of the language written IN THAT LANGUAGE (e.g. for Spanish write "Español", for French write "Français", for Chinese write "中文")
-- "languageCode": the ISO 639-1 code (e.g. "es", "fr", "zh")
-- "greeting": a natural, friendly message written ENTIRELY in the detected language explaining:
-  1. That it seems they are writing in [language name]
-  2. That other people won't be able to understand or respond to them
-  3. That they need to write in English for communication and moderation reasons
-  4. That Rosetta can instantly translate their messages from [language] to English with the exact same meaning, if they just authorize it
-Keep it warm and helpful, not preachy. 2-3 short sentences max.`,
+            instructions: `You are a language detection assistant.
+Write a short, warm message ENTIRELY in ${languageName} (${languageCode}) that:
+1. Notes they seem to be writing in ${languageName}
+2. Explains others won't be able to understand or respond to them
+3. Says they need English for communication and moderation
+4. Mentions Rosetta can instantly translate their messages from ${languageName} to English if they authorize it
+Keep it friendly, not preachy. 2-3 short sentences max. Output ONLY the message, nothing else.`,
             input: text,
         });
 
-        const raw = (await result.getText()).trim().replace(/```json|```/g, "");
-        return JSON.parse(raw);
+        const greeting = (await result.getText()).trim();
+        return { languageName, languageCode, greeting };
 
     } catch (error) {
-        console.error("Error detecting language:", error);
+        console.error("Error generating greeting:", error);
         return {
-            languageName: "another language",
-            languageCode: "??",
-            greeting: "It looks like you're writing in another language. Others here may not be able to understand you. Authorize Rosetta to translate your messages to English automatically!",
+            languageName,
+            languageCode,
+            greeting: "It looks like you're writing in another language. Authorize Rosetta to translate your messages to English automatically!",
         };
     }
 }

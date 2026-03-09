@@ -26,11 +26,13 @@ export function registerMessageHandler(app: App) {
                     if (Date.now() - recentlySent < 5 * 60 * 1000) return;
                 }
 
-                const shouldTranslate = await needsTranslation(text);
-                if (!shouldTranslate) return;
-
                 const settings = await getUserSettings(userId);
                 const promptStatus = settings?.promptStatus ?? null;
+
+                if (promptStatus === "dismissed") return;
+
+                const shouldTranslate = await needsTranslation(text);
+                if (!shouldTranslate) return;
 
                 if (promptStatus === null) {
                     const lang = await detectLanguage(text);
@@ -79,8 +81,6 @@ export function registerMessageHandler(app: App) {
                     });
                     return;
                 }
-
-                if (promptStatus === "dismissed") return;
 
                 if (!tokenRow) {
                     const now = Date.now();
