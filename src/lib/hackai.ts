@@ -58,14 +58,13 @@ export async function detectLanguage(text: string): Promise<{
     try {
         const result = await client.callModel({
             model: "google/gemini-2.5-flash",
-            instructions: `You are a language detection assistant.
-Write a short, warm message ENTIRELY in ${languageName} (${languageCode}) that:
-1. Notes they seem to be writing in ${languageName}
+            instructions: `Write a short, warm message ENTIRELY in ${languageName} (${languageCode}) that:
+1. Notes the user seems to be writing in ${languageName}
 2. Explains others won't be able to understand or respond to them
 3. Says they need English for communication and moderation
 4. Mentions Rosetta can instantly translate their messages from ${languageName} to English if they authorize it
-Keep it friendly, not preachy. 2-3 short sentences max. Output ONLY the message, nothing else.`,
-            input: text,
+Keep it warm and helpful, not preachy. 2-3 short sentences max. Output ONLY the message text, nothing else.`,
+            input: `Write the greeting in ${languageName}.`,
         });
 
         const greeting = (await result.getText()).trim();
